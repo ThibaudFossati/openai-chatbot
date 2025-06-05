@@ -45,13 +45,13 @@ export default function App() {
         body: JSON.stringify({
           model: 'gpt-4.1-nano',
           messages: [
-            // System prompt pour réponses très courtes et créatives
             {
               role: 'system',
               content:
-                "Vous êtes InStories, un bot créatif IA. " +
-                "Répondez toujours en une phrase concise, puis proposez immédiatement une ou deux idées créatives adaptées. " +
-                "Restez professionnel, clair, amical et créatif."
+                "Vous êtes InStories, un bot créatif IA spécialisé dans les projets de luxe, mode et design. " +
+                "Votre rôle : engager une discussion autour du projet créatif. Posez des questions pertinentes pour comprendre " +
+                "les objectifs, l’identité visuelle et les besoins du client. Restez professionnel, clair, amical et créatif. " +
+                "Évitez de proposer immédiatement des idées préfabriquées. Cherchez d’abord à en savoir plus sur le contexte."
             },
             ...messages,
             { role: 'user', content: userInput }
