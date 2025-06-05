@@ -1,46 +1,3 @@
-
-async function handleSend() {
-  if (!input.trim()) return;
-
-  // ajoute le message utilisateur
-  setMessages(prev => [...prev, { role: "user", content: input.trim() }]);
-  const userInput = input.trim();
-  setInput("");
-
-  // placeholder
-  setMessages(prev => [...prev, { role: "assistant", content: "…thinking…" }]);
-
-  try {
-    const raw = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",   // garde ou adapte
-        messages: [
-          { role: "system", content: "Vous êtes un assistant utile." },
-          ...messages,
-          { role: "user", content: userInput }
-        ]
-      })
-    });
-
-    const data = await raw.json();
-    if (!raw.ok) throw new Error(data.error?.message || raw.statusText);
-
-    const reply = data.choices?.[0]?.message?.content || "⚠️ Pas de réponse";
-    setMessages(prev =>
-      prev.map((m, i) =>
-        i === prev.length - 1 ? { ...m, content: reply } : m
-      )
-    );
-  } catch (err) {
-    setMessages(prev =>
-      prev.map((m, i) =>
-        i === prev.length - 1 ? { ...m, content: "⚠️ " + err.message } : m
-      )
-    );
-  }
-}
 import React, { useState } from 'react';
 import './App.css';
 
@@ -53,24 +10,21 @@ export default function App() {
   async function handleSend() {
     if (!input.trim()) return;
 
+    // 1) On ajoute d’abord le message utilisateur
     setMessages(prev => [...prev, { role: 'user', content: input.trim() }]);
     const userInput = input.trim();
     setInput('');
 
+    // 2) Puis on ajoute un placeholder “…thinking…”
     setMessages(prev => [...prev, { role: 'assistant', content: '…thinking…' }]);
 
     try {
-      const raw = await fetch('https://api.openai.com/v1/chat/completions', {
+      // 3) Envoi de la requête UNIQUEMENT au proxy local (/api/chat)
+      const raw = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`
-          /* Décommente la ligne ci-dessous uniquement si tu utilises une clé sk-proj
-          ,'OpenAI-Project': 'default'
-          */
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',          // mets gpt-4o-mini si ta clé est sk-proj
+          model: 'gpt-3.5-turbo',
           messages: [
             { role: 'system', content: 'Vous êtes un assistant utile.' },
             ...messages,
@@ -82,6 +36,7 @@ export default function App() {
       const data = await raw.json();
       if (!raw.ok) throw new Error(data.error?.message || raw.statusText);
 
+      // 4) Remplacer le placeholder par la réponse réelle
       const reply = data.choices?.[0]?.message?.content || '⚠️ Pas de réponse';
       setMessages(prev =>
         prev.map((m, i) =>
@@ -89,6 +44,7 @@ export default function App() {
         )
       );
     } catch (err) {
+      // 5) En cas d’erreur, on la remplace dans la bulle
       setMessages(prev =>
         prev.map((m, i) =>
           i === prev.length - 1
@@ -109,8 +65,13 @@ export default function App() {
           </li>
         ))}
       </ul>
-
-      <form className="input-area" onSubmit={e => { e.preventDefault(); handleSend(); }}>
+      <form
+        className="input-area"
+        onSubmit={e => {
+          e.preventDefault();
+          handleSend();
+        }}
+      >
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
