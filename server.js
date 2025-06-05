@@ -9,11 +9,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1) Serve React build folder en statique
+// 1) Sert le dossier build de React en statique
 const buildPath = path.join(__dirname, 'build');
 app.use(express.static(buildPath));
 
-// 2) Endpoint de l’API pour le chat
+// 2) Endpoint /api/chat qui transmet la requête à l’API OpenAI
 app.post('/api/chat', async (req, res) => {
   const { messages, model = 'gpt-3.5-turbo' } = req.body;
   try {
@@ -21,18 +21,18 @@ app.post('/api/chat', async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization : \`Bearer \${process.env.OPENAI_API_KEY}\`
+        'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY
       },
       body: JSON.stringify({ model, messages })
     });
     const data = await raw.json();
-    res.status(raw.status).json(data);
+    return res.status(raw.status).json(data);
   } catch (err) {
-    res.status(500).json({ error: { message: err.message } });
+    return res.status(500).json({ error: { message: err.message } });
   }
 });
 
-// 3) Catch-all : pour toute autre route, renvoyer le fichier index.html de React
+// 3) Catch-all : pour toute autre route, renvoyer index.html de React
 app.get('*', (req, res) => {
   res.sendFile(path.join(buildPath, 'index.html'));
 });
