@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function App() {
   const [messages, setMessages] = useState([
-    // Message d’accueil simple
+    // Accueil simple
     { role: 'assistant', content: "Bonjour ! Je suis votre bot créatif InStories. Comment puis-je vous aider ?" }
   ]);
   const [input, setInput] = useState('');
@@ -19,7 +19,7 @@ export default function App() {
     setMessages(prev => [...prev, { role: 'user', content: userInput }]);
     setInput('');
 
-    // Détection d'une demande de devis ou projet
+    // Détection demande de devis
     const texte = userInput.toLowerCase();
     const motsDevis = ['devis', 'projet', 'tarif', 'coût', 'prix', 'estimation'];
     if (motsDevis.some(mot => texte.includes(mot))) {
@@ -48,10 +48,11 @@ export default function App() {
             {
               role: 'system',
               content:
-                "Vous êtes InStories, un bot créatif IA spécialisé dans les projets de luxe, mode et design. " +
-                "Votre rôle : engager une discussion autour du projet créatif. Posez des questions pertinentes pour comprendre " +
-                "les objectifs, l’identité visuelle et les besoins du client. Restez professionnel, clair, amical et créatif. " +
-                "Évitez de proposer immédiatement des idées préfabriquées. Cherchez d’abord à en savoir plus sur le contexte."
+                "Vous êtes InStories, un bot créatif IA. Répondez aux questions en vous appuyant " +
+                "sur les éléments du site https://instories.fr : ses services, sa philosophie, ses workflows. " +
+                "Si l’utilisateur pose une question, reformulez brièvement son besoin, puis proposez une solution " +
+                "concrète ou un point d’entrée sur instories.fr. Restez professionnel, clair, amical et créatif. " +
+                "Posez une question de suivi si nécessaire pour affiner le projet."
             },
             ...messages,
             { role: 'user', content: userInput }
