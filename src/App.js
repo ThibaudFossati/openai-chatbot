@@ -28,7 +28,10 @@ export default function App() {
         ...prev,
         {
           role: 'assistant',
-          content: "Pour toute demande de devis ou projet, veuillez envoyer un e-mail à contact@instories.fr. Nous reviendrons vers vous rapidement."
+          content: "Nous sommes en mesure de travailler sur des programmes d’IA comme celui-ci, " +
+                   "ou de créer des solutions sur mesure pour la génération d’images et de vidéos en IA. " +
+                   "Pour toute demande de devis ou projet, veuillez envoyer un e-mail à contact@instories.fr. " +
+                   "Nous reviendrons vers vous rapidement."
         }
       ]);
       return;
