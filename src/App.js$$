@@ -1,46 +1,30 @@
+      const raw = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+          'OpenAI-Project': 'default'          // requis pour les clés sk-proj
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',               // modèle autorisé clé test
+          messages: [
+            { role: 'system', content: 'Vous êtes un assistant utile.' },
+            ...messages,
+            { role: 'user', content: userInput }
+          ]
+        })
+      });
 
-async function handleSend() {
-  if (!input.trim()) return;
+      const data = await raw.json();
+      if (!raw.ok) throw new Error(data.error?.message || raw.statusText);
 
-  // ajoute le message utilisateur
-  setMessages(prev => [...prev, { role: "user", content: input.trim() }]);
-  const userInput = input.trim();
-  setInput("");
+      const reply = data.choices?.[0]?.message?.content || '⚠️ Pas de réponse';
 
-  // placeholder
-  setMessages(prev => [...prev, { role: "assistant", content: "…thinking…" }]);
+npm start
 
-  try {
-    const raw = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",   // garde ou adapte
-        messages: [
-          { role: "system", content: "Vous êtes un assistant utile." },
-          ...messages,
-          { role: "user", content: userInput }
-        ]
-      })
-    });
+Quelle est la capitale du Japon ?
 
-    const data = await raw.json();
-    if (!raw.ok) throw new Error(data.error?.message || raw.statusText);
 
-    const reply = data.choices?.[0]?.message?.content || "⚠️ Pas de réponse";
-    setMessages(prev =>
-      prev.map((m, i) =>
-        i === prev.length - 1 ? { ...m, content: reply } : m
-      )
-    );
-  } catch (err) {
-    setMessages(prev =>
-      prev.map((m, i) =>
-        i === prev.length - 1 ? { ...m, content: "⚠️ " + err.message } : m
-      )
-    );
-  }
-}
 import React, { useState } from 'react';
 import './App.css';
 
@@ -65,12 +49,9 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`
-          /* Décommente la ligne ci-dessous uniquement si tu utilises une clé sk-proj
-          ,'OpenAI-Project': 'default'
-          */
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',          // mets gpt-4o-mini si ta clé est sk-proj
+          model: 'gpt-3.5-turbo',
           messages: [
             { role: 'system', content: 'Vous êtes un assistant utile.' },
             ...messages,
@@ -109,8 +90,13 @@ export default function App() {
           </li>
         ))}
       </ul>
-
-      <form className="input-area" onSubmit={e => { e.preventDefault(); handleSend(); }}>
+      <form
+        className="input-area"
+        onSubmit={e => {
+          e.preventDefault();
+          handleSend();
+        }}
+      >
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
