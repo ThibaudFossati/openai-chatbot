@@ -6,7 +6,31 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function App() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Bonjour ! Je suis InStories. Comment puis-je aider votre projet aujourd’hui ?' }
+    { role: 'assistant', content: 
+      "Bonjour !\n" +
+      "Je suis votre bot créatif propulsé par l’IA d’InStories, dédié à décoder vos besoins créatifs " +
+      "et vous proposer les solutions – AI Gan, automatisation, bot, logo, identité visuelle, " +
+      "campagnes Instagram, webdesign, visuels sur mesure 8K et expériences digitales haut de gamme.\n\n" +
+      "Ce que je propose :\n" +
+      "1. Processus de création de visuels et de campagnes digitales \n" +
+      "   • Aperçu rapide : pipeline structuré – génération de moodboard, croquis conceptuels, " +
+      "rendu final haute résolution. Sélection de références stylistiques (mode, cosmétique, design), " +
+      "prompting de modèles avancés (Stable Diffusion, ComfyUI) et ajustements itératifs.\n\n" +
+      "2. Processus de création de vidéo IA \n" +
+      "   • Aperçu rapide : script et storyboard → génération vidéo (RunwayML, Pika Labs) → transfert de style, étalonnage couleur via IA → montage final. " +
+      "Motion graphics (After Effects + plugins IA), design sonore mixé par IA.\n\n" +
+      "3. Retouche et amélioration IA \n" +
+      "   • Aperçu rapide : portraits et produits – peau, textures, éclairage optimisés par IA. " +
+      "Remplacement d’arrière-plan, suppression d’imperfections, relighting, reflets réalistes secteur luxe.\n\n" +
+      "4. Séries d’images et univers génératifs IA \n" +
+      "   • Aperçu rapide : collections thématiques – campagnes saisonnières, lancements produits, lookbooks. " +
+      "Chaque visuel cohérent en palette, éclairage, style. Construction d’un « univers IA » (mood-scape) – arcs narratifs visuels.\n\n" +
+      "5. Solutions digitales et créatives \n" +
+      "   • Aperçu rapide : collaboration avec développeurs sur Figma – wireframes, prototypes interactifs, interfaces haut de gamme.\n\n" +
+      "6. Mention “AI Powered Creativity” chez InStories \n" +
+      "   • Aperçu rapide : « AI Powered Creativity » – notre approche mêle imagination machine et direction artistique. " +
+      "Nous alignons l’ADN de la marque avec l’innovation algorithmique pour produire des contenus luxe ambitieux et réalisables!"
+    }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +42,7 @@ export default function App() {
     setMessages(prev => [...prev, { role: 'user', content: userInput }]);
     setInput('');
 
-    // Si mot de devis détecté, on propose l'email rapidement
+    // Détection d'une demande de devis ou projet
     const texte = userInput.toLowerCase();
     const motsDevis = ['devis', 'projet', 'tarif', 'coût', 'prix', 'estimation'];
     if (motsDevis.some(mot => texte.includes(mot))) {
@@ -27,24 +51,11 @@ export default function App() {
         {
           role: 'assistant',
           content:
-            "Nous créons des solutions IA sur mesure (images, vidéos). Pour un devis, envoyez un email à contact@instories.fr."
+            "Nous réalisons des solutions IA sur mesure (images, vidéos, automatisation). " +
+            "Pour un devis ou projet, envoyez un email à contact@instories.fr."
         }
       ]);
       return;
-    }
-
-    // Déterminer le prompt système selon l'avancement de la conversation
-    const userCount = messages.filter(m => m.role === 'user').length;
-    let systemPrompt = '';
-    if (userCount === 1) {
-      systemPrompt =
-        "Vous êtes InStories, un assistant créatif et amical. Répondez naturellement, posez une question de suivi si nécessaire.";
-    } else if (userCount < 3) {
-      systemPrompt =
-        "Vous êtes InStories, assistant conversationnel. Restez clair et engageant, invitez l'utilisateur à en dire plus sur son besoin.";
-    } else {
-      systemPrompt =
-        "Vous êtes InStories, expert en création de contenus IA. En 2–3 phrases, proposez vos services, mentionnez brièvement des références et orientez vers instories.fr.";
     }
 
     setLoading(true);
@@ -57,7 +68,22 @@ export default function App() {
         body: JSON.stringify({
           model: 'gpt-4.1-nano',
           messages: [
-            { role: 'system', content: systemPrompt },
+            {
+              role: 'system',
+              content:
+                "Vous êtes InStories, votre bot créatif IA. " +
+                "Vous aidez à décoder les besoins créatifs et proposez des solutions haut de gamme. " +
+                "Expliquez, en étant professionnel et clair, les workflows IA décrits ci-dessous selon la demande :\n\n" +
+                "1. Création de visuels et campagnes digitales – pipeline complet : moodboard, croquis conceptuels, rendu final 8K. " +
+                "Références stylées (mode, cosmétique, design), prompting Stable Diffusion, ComfyUI, ajustements itératifs.\n\n" +
+                "2. Création de vidéo IA – script & storyboard → génération vidéo (RunwayML, Pika Labs) → transfert de style, étalonnage couleur, montage avec motion graphics (After Effects + IA), design sonore mixé par IA.\n\n" +
+                "3. Retouche IA – portraits & produits : peau, textures, éclairage optimisés par IA. Remplacement d’arrière-plan, suppression d’imperfections, relighting, reflets secteur luxe.\n\n" +
+                "4. Séries d’images IA – campagnes saisonnières, lookbooks : cohérence palette, éclairage, style. Création d’un univers IA (mood-scape) narratif.\n\n" +
+                "5. Solutions digitales & créatives – collaboration Figma : wireframes, prototypes interactifs, interfaces haut de gamme.\n\n" +
+                "6. AI Powered Creativity – notre slogan : allier imagination machine à direction artistique pour des contenus luxe remarquables.\n\n" +
+                "Répondez de manière concise (2–3 phrases max), amical et créatif, avec l’humour subtil si possible. " +
+                "Encouragez l’expérimentation. Si l’utilisateur souhaite plus de détails, orientez-le vers instories.fr."
+            },
             ...messages,
             { role: 'user', content: userInput }
           ]
