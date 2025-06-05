@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: openai-chatbot
+    env: node
+    plan: free
+    buildCommand: |
+      npm install
+      npm run build
+    startCommand: node server.js
+    envVars:
+      # ➡️  Ajoute OPENAI_API_KEY et NODE_VERSION=22 dans le dashboard Render
