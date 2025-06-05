@@ -6,11 +6,12 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function App() {
   const [messages, setMessages] = useState([
-    // Accueil simple
+    // Message d’accueil simple
     { role: 'assistant', content: "Bonjour ! Je suis votre bot créatif InStories. Comment puis-je vous aider ?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailStatus, setEmailStatus] = useState(''); // pour feedback envoi email
 
   async function handleSend() {
     if (!input.trim()) return;
@@ -19,8 +20,23 @@ export default function App() {
     setMessages(prev => [...prev, { role: 'user', content: userInput }]);
     setInput('');
 
-    // Détection demande de devis
+    // Détection d'une demande de devis ou projet : proposer forfait semaine / devis long terme
     const texte = userInput.toLowerCase();
+    const motsForfait = ['forfait', 'semaine', 'abonnement'];
+    if (motsForfait.some(mot => texte.includes(mot))) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content:
+            "Nous proposons un forfait à la journée ou la semaine et un devis sur mesure pour une collaboration long terme. " +
+            "Pour plus de détails ou pour passer commande, cliquez sur le bouton “Contactez-nous” ci-dessous."
+        }
+      ]);
+      return;
+    }
+
+    // Détection d'une demande de devis sur le long terme
     const motsDevis = ['devis', 'projet', 'tarif', 'coût', 'prix', 'estimation'];
     if (motsDevis.some(mot => texte.includes(mot))) {
       setMessages(prev => [
@@ -28,8 +44,8 @@ export default function App() {
         {
           role: 'assistant',
           content:
-            "Nous réalisons des solutions IA sur mesure (images, vidéos, automatisation). " +
-            "Pour un devis ou projet, envoyez un email à contact@instories.fr."
+            "Pour un devis sur mesure ou une prestation long terme, cliquez sur le bouton “Contactez-nous” ci-dessous, " +
+            "et nous vous enverrons un email récapitulatif de notre conversation."
         }
       ]);
       return;
@@ -49,10 +65,9 @@ export default function App() {
               role: 'system',
               content:
                 "Vous êtes InStories, un bot créatif IA. Répondez aux questions en vous appuyant " +
-                "sur les éléments du site https://instories.fr : ses services, sa philosophie, ses workflows. " +
-                "Si l’utilisateur pose une question, reformulez brièvement son besoin, puis proposez une solution " +
-                "concrète ou un point d’entrée sur instories.fr. Restez professionnel, clair, amical et créatif. " +
-                "Posez une question de suivi si nécessaire pour affiner le projet."
+                "sur les éléments du site https://instories.fr : services, philosophie. " +
+                "Posez des questions de suivi pour mieux comprendre le projet avant de proposer une solution. " +
+                "Restez professionnel, clair, amical et créatif."
             },
             ...messages,
             { role: 'user', content: userInput }
@@ -82,6 +97,23 @@ export default function App() {
     }
   }
 
+  // Fonction pour envoyer la conversation par email
+  async function handleEmail() {
+    try {
+      const recipient = 'contact@instories.fr';
+      const raw = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, recipient })
+      });
+      const data = await raw.json();
+      if (!raw.ok) throw new Error(data.error?.message || raw.statusText);
+      setEmailStatus('Email envoyé avec succès !');
+    } catch (err) {
+      setEmailStatus('Erreur en envoyant l’email : ' + err.message);
+    }
+  }
+
   return (
     <div className="app-wrapper">
       <div className="chat-container">
@@ -98,6 +130,27 @@ export default function App() {
             </li>
           ))}
         </ul>
+
+        {/* Bouton Contactez-nous sous le chat */}
+        <div style={{ textAlign: 'center', margin: '12px 0' }}>
+          <button
+            onClick={handleEmail}
+            style={{
+              backgroundColor: '#007bff',
+              color: '#fff',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            Contactez-nous
+          </button>
+          {emailStatus && (
+            <div style={{ marginTop: '8px', color: '#333' }}>{emailStatus}</div>
+          )}
+        </div>
+
         <form className="input-area" onSubmit={e => { e.preventDefault(); handleSend(); }}>
           <input
             value={input}
