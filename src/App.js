@@ -14,9 +14,27 @@ export default function App() {
   async function handleSend() {
     if (!input.trim()) return;
 
-    setMessages(prev => [...prev, { role: 'user', content: input.trim() }]);
     const userInput = input.trim();
+    setMessages(prev => [...prev, { role: 'user', content: userInput }]);
     setInput('');
+
+    // Détection d'une demande de devis ou projet
+    const texte = userInput.toLowerCase();
+    const motsDevis = ['devis', 'projet', 'tarif', 'coût', 'prix', 'estimation'];
+    const estDevis = motsDevis.some(mot => texte.includes(mot));
+
+    if (estDevis) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: "Pour toute demande de devis ou projet, veuillez envoyer un e-mail à contact@instories.fr. Nous reviendrons vers vous rapidement."
+        }
+      ]);
+      return;
+    }
+
+    // Sinon, appel normal à l'API
     setLoading(true);
     setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
