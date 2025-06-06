@@ -1,6 +1,7 @@
 {
   "name": "openai-chatbot",
   "scripts": {
+    "dev:server": "nodemon server.js",
     "dev": "concurrently \"react-scripts start\" \"nodemon server.js\"",
     "start": "node server.js",
     "build": "react-scripts build"
@@ -9,17 +10,25 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.19.2",
+    "mongoose": "^8.15.1",
     "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.3",
+    "openai": "^5.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1",
     "react-spinners": "^0.17.0",
     "react-toastify": "^11.0.5",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "web-vitals": "^5.0.2"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.21",
     "concurrently": "^8.2.2",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.8"
   },
   "browserslist": {
     "production": [
