@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import { ClipLoader } from 'react-spinners';
 import { ToastContainer, toast } from 'react-toastify';
@@ -6,14 +6,11 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function App() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Bonjour ! Je suis votre bot créatif InStories. Comment puis-je vous aider ?" }
+    // Accueil modifié
+    { role: 'assistant', content: "Bonjour ! Je suis votre bot Ai Power Creative. Comment puis-je vous aider ?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    // Aucun composant voix, donc pas d'initialisation supplémentaire
-  }, []);
 
   async function handleSend(e) {
     e.preventDefault();
@@ -24,35 +21,37 @@ export default function App() {
     setInput('');
 
     const texte = userInput.toLowerCase();
-    const motsForfait = ['forfait', 'semaine', 'abonnement'];
-    const motsDevis  = ['devis', 'projet', 'tarif', 'coût', 'prix', 'estimation'];
+    const motsForfait = ['forfait', 'semaine'];
+    const motsDevis  = ['devis', 'projet'];
 
-    // Propose forfait ou devis
+    // Si "forfait" ou "semaine" → proposer devis journée/semaine + inviter à contacter
     if (motsForfait.some(mot => texte.includes(mot))) {
       setMessages(prev => [
         ...prev,
         {
           role: 'assistant',
           content:
-            "Nous proposons un forfait à la semaine à 500 € ou un devis sur mesure pour une collaboration long terme. " +
-            "Pour plus de détails ou pour passer commande, cliquez sur le bouton “Contactez-nous” ci-dessous."
+            "Nous proposons un devis à la journée (250 €) ou à la semaine (1 200 €). " +
+            "Contactez-nous à contact@instories.fr pour en savoir plus."
         }
       ]);
       return;
     }
+
+    // Si "devis" ou "projet" → inviter à contacter directement
     if (motsDevis.some(mot => texte.includes(mot))) {
       setMessages(prev => [
         ...prev,
         {
           role: 'assistant',
           content:
-            "Pour un devis sur mesure ou une prestation long terme, cliquez sur le bouton “Contactez-nous” ci-dessous, " +
-            "et nous vous enverrons un email récapitulatif de notre conversation."
+            "Pour un devis sur mesure ou un projet long terme, écrivez-nous à contact@instories.fr."
         }
       ]);
       return;
     }
 
+    // Sinon, reformuler en 15 mots max et poser question de suivi
     setLoading(true);
     setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
@@ -63,13 +62,13 @@ export default function App() {
         body: JSON.stringify({
           model: 'gpt-4.1-nano',
           messages: [
+            // System prompt mis à jour
             {
               role: 'system',
               content:
-                "Vous êtes InStories, un bot créatif IA. Répondez en vous appuyant sur " +
-                "les éléments du site https://instories.fr : services, philosophie, workflows. " +
-                "Posez des questions de suivi pour mieux comprendre le projet avant de proposer une solution. " +
-                "Restez professionnel, clair, amical et créatif."
+                "Vous êtes InStories, un bot Ai Power Creative. Ton : professionnel & clair (création, images Ai, luxe, mode, design) " +
+                "et amical & créatif (humour subtil). Basez-vous sur instories.fr (services, workflows, philosophie). " +
+                "Pour toute question, reformulez très brièvement (15 mots max) et posez une question de suivi."
             },
             ...messages,
             { role: 'user', content: userInput }
@@ -79,7 +78,7 @@ export default function App() {
       const data = await raw.json();
       if (!raw.ok) throw new Error(data.error?.message || raw.statusText);
 
-      const reply = data.choices?.[0]?.message?.content.trim() || '⚠️ Pas de réponse';
+      const reply = data.choices?.[0]?.message?.content.trim() || '⚠ Pas de réponse';
       setMessages(prev =>
         prev.map((m, i) =>
           i === prev.length - 1 ? { ...m, content: reply } : m
@@ -90,7 +89,7 @@ export default function App() {
       setMessages(prev =>
         prev.map((m, i) =>
           i === prev.length - 1
-            ? { ...m, content: '⚠️ ' + err.message }
+            ? { ...m, content: '⚠ ' + err.message }
             : m
         )
       );
@@ -108,13 +107,12 @@ export default function App() {
       });
       const data = await raw.json();
       if (!raw.ok) throw new Error(data.error?.message || raw.statusText);
-      toast.success('Email envoyé avec succès !', { position: 'top-right' });
+      toast.success('Email envoyé !', { position: 'top-right' });
     } catch (err) {
       toast.error('Erreur : ' + err.message, { position: 'top-right' });
     }
   }
 
-  // Unique racine JSX : <div className="app-wrapper">
   return (
     <div className="app-wrapper">
       <div className="chat-container">

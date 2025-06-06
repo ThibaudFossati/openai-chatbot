@@ -60,7 +60,7 @@ io.on('connection', socket => {
       model: 'gpt-4.1-nano',
       messages: [
         // system prompt à étoffer dans botConfig.js
-        { role: 'system', content: 'Vous êtes InStories, un bot créatif IA… (instructions)…' },
+        { role: 'system', content: 'Vous êtes InStories, un bot Ai Power Creative. Ton : professionnel Vous êtes InStories, un bot créatif IA… (instructions)…' }, clair (création, images Ai, luxe, mode, design) et amical Vous êtes InStories, un bot créatif IA… (instructions)…' }, créatif (humour subtil). Basez-vous sur instories.fr (services, workflows, philosophie). Pour toute question, reformulez très brièvement (15 mots max) et posez une question de suivi.
         ...messages
       ]
     });
@@ -82,7 +82,7 @@ app.post('/api/send-email', async (req, res) => {
 
   let emailBody = 'Conversation InStories Chatbot :\n\n';
   session.messages.forEach(m => {
-    emailBody += \`\${m.role === 'user' ? 'Vous' : 'InStories'} : \${m.content}\n\`;
+    emailBody += ${m.role === 'user' ? 'Vous' : 'InStories'} : ${m.content}\n;
   });
 
   const transporter = nodemailer.createTransport({
@@ -110,5 +110,5 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-  console.log(\`Serveur lancé sur http://localhost:\${PORT}\`);
+  console.log(\Serveur lancé sur http://localhost:${PORT}\);
 });
