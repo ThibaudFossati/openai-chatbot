@@ -1,74 +1,110 @@
-import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
+import React, { useState, useEffect } from 'react';
 import './App.css';
-import VoiceChat from './components/VoiceChat/VoiceChat';
-import ImageAnalyzer from './components/ImageAnalyzer/ImageAnalyzer';
-import PortfolioCarousel from './components/PortfolioCarousel/PortfolioCarousel';
 import { ClipLoader } from 'react-spinners';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const socket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:10000');
-
 export default function App() {
-  const [sessionId] = useState(() => Date.now().toString());
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: "Bonjour ! Je suis votre bot créatif InStories. Comment puis-je vous aider ?" }
+  ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [carouselItems, setCarouselItems] = useState([]);
 
   useEffect(() => {
-    // Initialiser la session sur le serveur
-    socket.emit('newUserSession', { sessionId });
-    socket.on('loadSession', savedMessages => {
-      setMessages(savedMessages);
-    });
-    socket.on('botMessage', reply => {
-      setLoading(false);
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-    });
-    return () => {
-      socket.disconnect();
-    };
-  }, [sessionId]);
+    // Aucun composant voix, donc pas d'initialisation supplémentaire
+  }, []);
 
-  function handleSend(e) {
+  async function handleSend(e) {
     e.preventDefault();
     if (!input.trim()) return;
-    const content = input.trim();
-    setMessages(prev => [...prev, { role: 'user', content }]);
+
+    const userInput = input.trim();
+    setMessages(prev => [...prev, { role: 'user', content: userInput }]);
     setInput('');
+
+    const texte = userInput.toLowerCase();
+    const motsForfait = ['forfait', 'semaine', 'abonnement'];
+    const motsDevis  = ['devis', 'projet', 'tarif', 'coût', 'prix', 'estimation'];
+
+    // Propose forfait ou devis
+    if (motsForfait.some(mot => texte.includes(mot))) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content:
+            "Nous proposons un forfait à la semaine à 500 € ou un devis sur mesure pour une collaboration long terme. " +
+            "Pour plus de détails ou pour passer commande, cliquez sur le bouton “Contactez-nous” ci-dessous."
+        }
+      ]);
+      return;
+    }
+    if (motsDevis.some(mot => texte.includes(mot))) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content:
+            "Pour un devis sur mesure ou une prestation long terme, cliquez sur le bouton “Contactez-nous” ci-dessous, " +
+            "et nous vous enverrons un email récapitulatif de notre conversation."
+        }
+      ]);
+      return;
+    }
+
     setLoading(true);
-    socket.emit('userMessage', { sessionId, content });
-  }
+    setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
-  function handleTranscript(text) {
-    setInput(text);
-    // Lancer l’envoi automatique si vous le souhaitez :
-    // handleSend(new Event('submit'));
-  }
+    try {
+      const raw = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gpt-4.1-nano',
+          messages: [
+            {
+              role: 'system',
+              content:
+                "Vous êtes InStories, un bot créatif IA. Répondez en vous appuyant sur " +
+                "les éléments du site https://instories.fr : services, philosophie, workflows. " +
+                "Posez des questions de suivi pour mieux comprendre le projet avant de proposer une solution. " +
+                "Restez professionnel, clair, amical et créatif."
+            },
+            ...messages,
+            { role: 'user', content: userInput }
+          ]
+        })
+      });
+      const data = await raw.json();
+      if (!raw.ok) throw new Error(data.error?.message || raw.statusText);
 
-  function handleAnalyzeImage(imageFile) {
-    // Exemple : ajouter à l’historique un message de type image uploadée
-    const url = URL.createObjectURL(imageFile);
-    setMessages(prev => [...prev, { role: 'user', content: `[Image: ${imageFile.name}]` }]);
-    // Placeholder : on pourrait émettre un event socket pour analyser l’image
+      const reply = data.choices?.[0]?.message?.content.trim() || '⚠️ Pas de réponse';
+      setMessages(prev =>
+        prev.map((m, i) =>
+          i === prev.length - 1 ? { ...m, content: reply } : m
+        )
+      );
+    } catch (err) {
+      toast.error('Erreur : ' + err.message, { position: 'top-right' });
+      setMessages(prev =>
+        prev.map((m, i) =>
+          i === prev.length - 1
+            ? { ...m, content: '⚠️ ' + err.message }
+            : m
+        )
+      );
+    } finally {
+      setLoading(false);
+    }
   }
-
-  // Exemple d’items pour le carrousel (à remplacer dynamiquement)
-  useEffect(() => {
-    setCarouselItems([
-      { src: '/examples/moodboard1.jpg', alt: 'Moodboard Mode', caption: 'Moodboard Fashion' },
-      { src: '/examples/moodboard2.jpg', alt: 'Moodboard Luxe', caption: 'Moodboard Luxe' }
-    ]);
-  }, []);
 
   async function handleEmail() {
     try {
       const raw = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, recipient: 'contact@instories.fr' })
+        body: JSON.stringify({ messages, recipient: 'contact@instories.fr' })
       });
       const data = await raw.json();
       if (!raw.ok) throw new Error(data.error?.message || raw.statusText);
@@ -78,10 +114,9 @@ export default function App() {
     }
   }
 
+  // Unique racine JSX : <div className="app-wrapper">
   return (
     <div className="app-wrapper">
-      <PortfolioCarousel items={carouselItems} />
-
       <div className="chat-container">
         <ul className="messages">
           {messages.map((m, i) => (
@@ -96,10 +131,6 @@ export default function App() {
             </li>
           ))}
         </ul>
-
-        <VoiceChat onTranscript={handleTranscript} />
-
-        <ImageAnalyzer onAnalyze={handleAnalyzeImage} />
 
         <div style={{ textAlign: 'center', margin: '12px 0' }}>
           <button
